@@ -1,0 +1,35 @@
+{
+  "name": "smart-healthcare-onpremise",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fitbit 기반 다음날 스트레스 취약도 조기경보 서비스 (On-Premise)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "migrate": "node src/db/migrate.js",
+    "seed": "node scripts/seed.js",
+    "simulate": "node scripts/simulator.js",
+    "morning-job": "node scripts/run-morning-job.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mqtt": "^5.10.1",
+    "node-cron": "^3.0.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

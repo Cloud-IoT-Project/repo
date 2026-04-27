@@ -1,0 +1,12 @@
+node_modules/
+data/*.db*
+data/raw/*.jsonl
+docs/
+CLAUDE.md
+!README.md
+.env
+.env.local
+.DS_Store
+*.log
+.vscode/
+.idea/
