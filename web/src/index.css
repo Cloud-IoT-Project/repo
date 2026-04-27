@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --color-bg: oklch(0.98 0.005 240);
+  --color-card: oklch(1 0 0);
+}
+
+html, body, #root {
+  height: 100%;
+}
+body {
+  background: var(--color-bg);
+  color: oklch(0.20 0.02 240);
+  font-feature-settings: "tnum";
+}
+
+/* 등급 색상 (TailwindClass에서 직접 색 지정) */
+.level-NORMAL   { background: oklch(0.94 0.05 150); color: oklch(0.40 0.10 150); }
+.level-CAUTION  { background: oklch(0.94 0.10 90);  color: oklch(0.40 0.15 70); }
+.level-WARNING  { background: oklch(0.92 0.12 50);  color: oklch(0.40 0.18 40); }
+.level-CRITICAL { background: oklch(0.92 0.10 25);  color: oklch(0.40 0.20 25); }
+
+.tag-LOW_SIGNAL          { background: oklch(0.94 0.05 150); color: oklch(0.40 0.10 150); }
+.tag-MODERATE_SIGNAL     { background: oklch(0.94 0.10 90);  color: oklch(0.40 0.15 70); }
+.tag-HIGH_STRESS_SIGNAL  { background: oklch(0.92 0.10 25);  color: oklch(0.40 0.20 25); }

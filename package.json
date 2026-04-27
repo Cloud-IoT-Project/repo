@@ -10,7 +10,9 @@
     "migrate": "node src/db/migrate.js",
     "seed": "node scripts/seed.js",
     "simulate": "node scripts/simulator.js",
-    "morning-job": "node scripts/run-morning-job.js"
+    "morning-job": "node scripts/run-morning-job.js",
+    "build:web": "vite build",
+    "dev:web": "vite"
   },
   "dependencies": {
     "axios": "^1.7.7",
@@ -27,7 +29,15 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "@tailwindcss/vite": "^4.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "lucide-react": "^0.460.0",
+    "nodemon": "^3.1.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.13.3",
+    "tailwindcss": "^4.0.0",
+    "vite": "^5.4.10"
   },
   "engines": {
     "node": ">=18"

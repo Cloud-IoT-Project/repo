@@ -14,8 +14,15 @@ npm run migrate         # SQLite 스키마 적용
 npm run seed            # 데모 사용자 2명 + baseline 입력
 npm run simulate -- --user user_001 --days 5 --eda   # 시뮬레이션 데이터 5일치
 npm run morning-job     # 오늘 아침 평가 즉시 실행 (cron 대신 수동 트리거)
+npm run build:web       # React 대시보드 빌드 → public/ 출력 (UI 변경 후 재실행)
 
 npm start               # 서버 가동 → http://localhost:8080
+```
+
+UI 개발 중에는 별도 dev server를 쓰면 HMR 가능:
+
+```bash
+npm run dev:web   # http://localhost:5173 (Vite, /api 요청은 8080으로 proxy)
 ```
 
 브라우저에서 `http://localhost:8080` 열고 `user_001 / demo1234`로 로그인.
@@ -50,8 +57,13 @@ scripts/
   seed.js               # 데모 사용자 + baseline 시드
   simulator.js          # Fitbit 야간 신호 가짜 데이터 생성
   run-morning-job.js    # cron 대신 수동 트리거
-public/
-  index.html, app.js, style.css   # 단일 페이지 대시보드 (vanilla)
+web/                  # React 대시보드 소스 (Vite + Tailwind v4)
+  index.html
+  src/
+    main.jsx, App.jsx
+    components/       # FitbitCard, MorningAlertCard, EdaModal, TimeBlockChart, ...
+    lib/api.js, format.js
+public/               # `npm run build:web` 산출물 (Express가 정적 서빙)
 data/
   healthcare.db         # SQLite (.gitignore)
   raw/                  # 원천 로그 .jsonl (S3 대체)
