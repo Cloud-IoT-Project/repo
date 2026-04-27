@@ -28,15 +28,19 @@ app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'smart-healt
 // 인증 (auth는 자체에서 토큰 발급)
 app.use('/api/v1/auth', authRoutes);
 
-// Fitbit OAuth callback은 Fitbit이 직접 호출하므로 JWT 면제 (state로 검증)
-app.use('/api/v1/fitbit/callback', fitbitRoutes);
+// Fitbit: /callback은 Fitbit이 직접 호출하므로 JWT 면제 (state로 검증).
+// 나머지(/status, /authorize, /sync, /disconnect)는 requireAuth.
+// ※ 아래 /api/v1 generic mount보다 먼저 와야 함 — 아니면 그쪽 requireAuth가 먼저 401 반환.
+app.use('/api/v1/fitbit', (req, res, next) => {
+  if (req.path === '/callback') return next();
+  return requireAuth(req, res, next);
+}, fitbitRoutes);
 
 // 보호된 엔드포인트
 app.use('/api/v1', requireAuth, alertsRoutes);
 app.use('/api/v1', requireAuth, edaRoutes);
 app.use('/api/v1/reports', requireAuth, reportsRoutes);
 app.use('/api/v1', requireAuth, staiRoutes);
-app.use('/api/v1/fitbit', requireAuth, fitbitRoutes);
 
 // API 문서
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
