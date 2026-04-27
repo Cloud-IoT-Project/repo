@@ -22,13 +22,10 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- OAuth state 저장 (CSRF 방지용, 짧은 수명)
--- redirect_uri는 authorize 시점의 host 기준으로 만들어 저장하고, callback 토큰 교환 시 동일한 값을 사용
--- (Fitbit 정책: token exchange의 redirect_uri는 authorize 단계의 그것과 정확히 일치해야 함)
 CREATE TABLE IF NOT EXISTS oauth_states (
   state         TEXT PRIMARY KEY,
   user_id       TEXT NOT NULL,
   code_verifier TEXT NOT NULL,
-  redirect_uri  TEXT,
   created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

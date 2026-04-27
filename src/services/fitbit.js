@@ -31,18 +31,15 @@ function generatePkce() {
   return { verifier, challenge };
 }
 
-function buildAuthorizeUrl({ userId, includeEda = false, redirectUri }) {
+function buildAuthorizeUrl({ userId, includeEda = false }) {
   if (!isConfigured()) throw new Error('Fitbit credentials not configured (.env)');
-  const uri = redirectUri || config.fitbit.redirectUri;
-  if (!uri) throw new Error('redirect_uri를 결정할 수 없습니다');
-
   const state = crypto.randomBytes(16).toString('hex');
   const { verifier, challenge } = generatePkce();
 
   const db = getDb();
   db.prepare(`
-    INSERT INTO oauth_states (state, user_id, code_verifier, redirect_uri) VALUES (?, ?, ?, ?)
-  `).run(state, userId, verifier, uri);
+    INSERT INTO oauth_states (state, user_id, code_verifier) VALUES (?, ?, ?)
+  `).run(state, userId, verifier);
 
   const params = new URLSearchParams({
     client_id: config.fitbit.clientId,
@@ -50,13 +47,13 @@ function buildAuthorizeUrl({ userId, includeEda = false, redirectUri }) {
     code_challenge: challenge,
     code_challenge_method: 'S256',
     scope: (includeEda ? SCOPES_WITH_EDA : SCOPES).join(' '),
-    redirect_uri: uri,
+    redirect_uri: config.fitbit.redirectUri,
     state,
   });
   return `${AUTHORIZE_URL}?${params.toString()}`;
 }
 
-async function exchangeCodeForToken(code, codeVerifier, redirectUri) {
+async function exchangeCodeForToken(code, codeVerifier) {
   const basic = Buffer.from(
     `${config.fitbit.clientId}:${config.fitbit.clientSecret}`
   ).toString('base64');
@@ -66,7 +63,7 @@ async function exchangeCodeForToken(code, codeVerifier, redirectUri) {
     code,
     code_verifier: codeVerifier,
     grant_type: 'authorization_code',
-    redirect_uri: redirectUri || config.fitbit.redirectUri,
+    redirect_uri: config.fitbit.redirectUri,
   });
 
   const { data } = await axios.post(TOKEN_URL, body.toString(), {
