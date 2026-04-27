@@ -15,6 +15,7 @@ const alertsRoutes = require('./routes/alerts');
 const edaRoutes = require('./routes/eda');
 const reportsRoutes = require('./routes/reports');
 const staiRoutes = require('./routes/stai');
+const fitbitRoutes = require('./routes/fitbit');
 
 const app = express();
 app.use(helmet({ contentSecurityPolicy: false })); // 정적 대시보드 inline 스크립트 허용
@@ -27,11 +28,15 @@ app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'smart-healt
 // 인증 (auth는 자체에서 토큰 발급)
 app.use('/api/v1/auth', authRoutes);
 
+// Fitbit OAuth callback은 Fitbit이 직접 호출하므로 JWT 면제 (state로 검증)
+app.use('/api/v1/fitbit/callback', fitbitRoutes);
+
 // 보호된 엔드포인트
 app.use('/api/v1', requireAuth, alertsRoutes);
 app.use('/api/v1', requireAuth, edaRoutes);
 app.use('/api/v1/reports', requireAuth, reportsRoutes);
 app.use('/api/v1', requireAuth, staiRoutes);
+app.use('/api/v1/fitbit', requireAuth, fitbitRoutes);
 
 // API 문서
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

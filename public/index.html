@@ -25,18 +25,34 @@
 
   <!-- 메인 -->
   <main id="mainSection" hidden>
+    <!-- Fitbit 연결 -->
+    <section id="fitbitCard" class="card">
+      <h2>Fitbit 연결</h2>
+      <div id="fitbitStatus" class="muted">상태 확인 중…</div>
+      <div class="row">
+        <button id="fitbitConnectBtn" hidden>Fitbit 계정 연결</button>
+        <button id="fitbitSyncBtn" hidden>오늘 데이터 가져오기</button>
+        <button id="fitbitDisconnectBtn" class="ghost" hidden>연결 해제</button>
+      </div>
+      <p id="fitbitSyncResult" class="muted"></p>
+    </section>
+
     <!-- 아침 경보 -->
     <section id="alertCard" class="card alert">
       <h2>아침 조기 경보</h2>
       <div id="alertContent" class="alert-body">불러오는 중…</div>
-      <button id="recomputeBtn" class="ghost">재계산</button>
+      <div class="row">
+        <button id="recomputeBtn" class="ghost">재계산</button>
+        <button id="startEdaBtn" class="primary" hidden>지금 EDA 측정 시작</button>
+      </div>
     </section>
 
-    <!-- EDA 입력 -->
+    <!-- EDA 입력 (수동) -->
     <section class="card">
-      <h2>낮 EDA 측정 입력</h2>
+      <h2>낮 EDA 측정 입력 <span class="muted" style="font-weight:normal">(수동)</span></h2>
+      <p class="muted">Fitbit 동기화로 자동 입력됩니다. 수동으로도 가능:</p>
       <form id="edaForm">
-        <label>EDA 값 (μS)
+        <label>EDA 값 (μS 또는 averageStressLevel)
           <input name="eda_value" type="number" step="0.01" min="0" required placeholder="예: 1.2" />
         </label>
         <button type="submit">기록</button>
@@ -77,6 +93,25 @@
 
     <button id="logoutBtn" class="ghost">로그아웃</button>
   </main>
+
+  <!-- EDA 측정 모달 -->
+  <div id="edaModal" class="modal" hidden>
+    <div class="modal-card">
+      <h2 id="edaModalTitle">EDA 측정 안내</h2>
+      <div id="edaModalBody">
+        <p>Fitbit Charge 5/Sense에서 <strong>EDA Scan 앱을 실행</strong>하고 손바닥을 디바이스 위에 올려주세요.</p>
+        <p>3분간 디바이스를 쥐고 가만히 있으면 측정이 완료됩니다.</p>
+        <div class="timer" id="edaTimer">03:00</div>
+        <p class="muted">측정 후 폰의 Fitbit 앱이 데이터를 동기화하면 자동으로 우리 대시보드에 반영됩니다.</p>
+      </div>
+      <div class="row">
+        <button id="edaStartBtn" class="primary">3분 측정 시작</button>
+        <button id="edaPullBtn" hidden>Fitbit에서 결과 가져오기</button>
+        <button id="edaCloseBtn" class="ghost">닫기</button>
+      </div>
+      <p id="edaModalStatus" class="muted"></p>
+    </div>
+  </div>
 
   <script src="/app.js"></script>
 </body>

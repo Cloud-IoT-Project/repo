@@ -70,6 +70,28 @@ code { background: #f3f4f6; padding: 2px 5px; border-radius: 4px; }
 .tag.MODERATE_SIGNAL { background: #fef3c7; color: #854d0e; }
 .tag.HIGH_STRESS_SIGNAL { background: #fee2e2; color: #991b1b; }
 
+/* 버튼 행 */
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+button.primary { background: var(--accent); }
+
+/* 모달 */
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-card {
+  background: #fff; border-radius: 12px; padding: 24px;
+  max-width: 420px; width: 90%;
+}
+.modal-card h2 { margin: 0 0 12px; font-size: 18px; }
+.timer {
+  font-size: 56px; font-weight: 700; text-align: center;
+  font-variant-numeric: tabular-nums;
+  margin: 16px 0; color: var(--accent);
+}
+
 /* 시간대 차트 */
 .tb-grid { display: flex; gap: 8px; align-items: flex-end; height: 140px; margin-top: 8px; }
 .tb-grid .bar {

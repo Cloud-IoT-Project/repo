@@ -12,7 +12,21 @@ CREATE TABLE IF NOT EXISTS users (
   baseline_hrv_mean   REAL,   -- 개인 야간 HRV(rMSSD) 평균
   baseline_hrv_std    REAL,   -- 개인 야간 HRV 표준편차
   baseline_rhr        REAL,   -- 개인 휴식기 심박 평균
+  -- Fitbit OAuth 2.0 (사용자가 본인 계정 연결 시 채워짐)
+  fitbit_user_id        TEXT,
+  fitbit_access_token   TEXT,
+  fitbit_refresh_token  TEXT,
+  fitbit_expires_at     TEXT,        -- ISO8601
+  fitbit_scope          TEXT,
   created_at       TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- OAuth state 저장 (CSRF 방지용, 짧은 수명)
+CREATE TABLE IF NOT EXISTS oauth_states (
+  state         TEXT PRIMARY KEY,
+  user_id       TEXT NOT NULL,
+  code_verifier TEXT NOT NULL,
+  created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- 원천 샘플 (Fitbit/시뮬레이터에서 들어온 모든 측정값)

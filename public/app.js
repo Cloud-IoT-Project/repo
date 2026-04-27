@@ -169,6 +169,119 @@ function refreshAll() {
   loadAlert().catch((e) => $('#alertContent').textContent = '오류: ' + e.message);
   loadDaily();
   loadTimeblock();
+  loadFitbitStatus();
+}
+
+// ── Fitbit 연결 ───────────────────────────────────────────
+async function loadFitbitStatus() {
+  try {
+    const s = await api('/fitbit/status');
+    const statusEl = $('#fitbitStatus');
+    if (!s.configured) {
+      statusEl.innerHTML = '<span class="muted">서버에 Fitbit credentials가 설정되지 않았습니다.</span>';
+      return;
+    }
+    if (s.connected) {
+      statusEl.innerHTML = `✓ 연결됨 — Fitbit user <code>${s.fitbit_user_id}</code>`;
+      $('#fitbitConnectBtn').hidden = true;
+      $('#fitbitSyncBtn').hidden = false;
+      $('#fitbitDisconnectBtn').hidden = false;
+      $('#startEdaBtn').hidden = false;
+    } else {
+      statusEl.innerHTML = '미연결 — Fitbit 계정 연결 후 자동 데이터 수집이 가능합니다.';
+      $('#fitbitConnectBtn').hidden = false;
+      $('#fitbitSyncBtn').hidden = true;
+      $('#fitbitDisconnectBtn').hidden = true;
+      $('#startEdaBtn').hidden = true;
+    }
+  } catch (e) {
+    $('#fitbitStatus').textContent = '상태 확인 실패: ' + e.message;
+  }
+}
+
+$('#fitbitConnectBtn').addEventListener('click', async () => {
+  const r = await api('/fitbit/authorize');
+  window.open(r.url, '_blank', 'width=520,height=720');
+  // 콜백 후 사용자가 창 닫고 돌아오면 새로고침으로 상태 반영
+  $('#fitbitStatus').textContent = '브라우저 새 창에서 Fitbit 인증을 완료해 주세요. 끝나면 이 창에서 새로고침(F5).';
+});
+
+$('#fitbitSyncBtn').addEventListener('click', async () => {
+  $('#fitbitSyncResult').textContent = '동기화 중…';
+  try {
+    const r = await fetch(API + '/fitbit/sync', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((r) => r.json());
+    const msg = `${r.date}: HRV ${r.hrv_inserted} · RHR ${r.rhr_inserted} · Sleep ${r.sleep_inserted} · EDA ${r.eda_inserted}`;
+    $('#fitbitSyncResult').innerHTML = msg + (r.errors?.length ? `<br><span style="color:#dc2626">오류: ${r.errors.join(' / ')}</span>` : '');
+    await refreshAll();
+  } catch (e) {
+    $('#fitbitSyncResult').textContent = '동기화 실패: ' + e.message;
+  }
+});
+
+$('#fitbitDisconnectBtn').addEventListener('click', async () => {
+  if (!confirm('Fitbit 연결을 해제하시겠습니까?')) return;
+  await api('/fitbit/disconnect', { method: 'POST' });
+  await loadFitbitStatus();
+});
+
+// ── EDA 3분 측정 모달 ──────────────────────────────────────
+let edaTimerId = null;
+let edaTimerSec = 180;
+
+$('#startEdaBtn').addEventListener('click', () => openEdaModal());
+$('#edaCloseBtn').addEventListener('click', () => closeEdaModal());
+$('#edaStartBtn').addEventListener('click', () => startEdaTimer());
+$('#edaPullBtn').addEventListener('click', () => pullEdaFromFitbit());
+
+function openEdaModal() {
+  $('#edaModal').hidden = false;
+  $('#edaTimer').textContent = '03:00';
+  $('#edaModalStatus').textContent = '';
+  $('#edaStartBtn').hidden = false;
+  $('#edaPullBtn').hidden = true;
+}
+function closeEdaModal() {
+  if (edaTimerId) { clearInterval(edaTimerId); edaTimerId = null; }
+  $('#edaModal').hidden = true;
+}
+function startEdaTimer() {
+  $('#edaStartBtn').hidden = true;
+  edaTimerSec = 180;
+  $('#edaModalStatus').textContent = '디바이스를 쥐고 가만히 계세요…';
+  edaTimerId = setInterval(() => {
+    edaTimerSec--;
+    const mm = String(Math.floor(edaTimerSec / 60)).padStart(2, '0');
+    const ss = String(edaTimerSec % 60).padStart(2, '0');
+    $('#edaTimer').textContent = `${mm}:${ss}`;
+    if (edaTimerSec <= 0) {
+      clearInterval(edaTimerId);
+      edaTimerId = null;
+      $('#edaModalStatus').textContent = '측정 완료. Fitbit 앱이 동기화되면 결과를 가져올 수 있습니다.';
+      $('#edaPullBtn').hidden = false;
+    }
+  }, 1000);
+}
+async function pullEdaFromFitbit() {
+  $('#edaModalStatus').textContent = 'Fitbit 클라우드에서 결과 가져오는 중…';
+  try {
+    const r = await fetch(API + '/fitbit/sync', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((r) => r.json());
+    if (r.eda_inserted > 0) {
+      $('#edaModalStatus').textContent = `✓ EDA 스캔 ${r.eda_inserted}건이 적재되었습니다.`;
+      await refreshAll();
+      setTimeout(closeEdaModal, 1500);
+    } else {
+      $('#edaModalStatus').innerHTML = '아직 동기화되지 않았습니다. 폰의 Fitbit 앱을 한 번 열어 보시고 다시 시도해 주세요.<br>'
+        + (r.errors?.length ? `<small>${r.errors.join(' / ')}</small>` : '');
+    }
+  } catch (e) {
+    $('#edaModalStatus').textContent = '실패: ' + e.message;
+  }
 }
 
 function escape(s) { return String(s).replace(/[<>&"']/g, (c) => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])); }
