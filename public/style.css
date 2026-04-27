@@ -1,0 +1,87 @@
+:root {
+  --bg: #f5f6f8;
+  --card: #fff;
+  --line: #e5e7eb;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --green: #16a34a;
+  --yellow: #eab308;
+  --orange: #ea580c;
+  --red: #dc2626;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', sans-serif;
+  background: var(--bg); color: #111;
+}
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 24px; background: #fff; border-bottom: 1px solid var(--line);
+}
+header h1 { margin: 0; font-size: 18px; }
+main, #loginSection { max-width: 720px; margin: 16px auto; padding: 0 16px; }
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px;
+}
+.card h2 { margin: 0 0 12px; font-size: 15px; color: #374151; }
+form label { display: block; margin: 8px 0; font-size: 14px; }
+input, select {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--line);
+  border-radius: 8px; font-size: 14px; background: #fff;
+}
+button {
+  background: var(--accent); color: #fff; border: 0;
+  padding: 10px 16px; border-radius: 8px; font-size: 14px;
+  cursor: pointer; margin-top: 6px;
+}
+button.ghost {
+  background: transparent; color: var(--muted); border: 1px solid var(--line);
+}
+.muted { color: var(--muted); font-size: 13px; }
+code { background: #f3f4f6; padding: 2px 5px; border-radius: 4px; }
+
+/* 아침 경보 */
+.alert-body { font-size: 16px; line-height: 1.55; }
+.alert-body .level {
+  display: inline-block; padding: 6px 14px; border-radius: 999px;
+  font-weight: 700; font-size: 18px; margin-right: 8px;
+}
+.alert-body .reason { margin-top: 10px; color: #374151; }
+.alert-body .action {
+  margin-top: 8px; padding: 10px 12px;
+  background: #f3f4f6; border-radius: 8px; font-size: 14px;
+}
+.level.NORMAL   { background: #dcfce7; color: #166534; }
+.level.CAUTION  { background: #fef3c7; color: #854d0e; }
+.level.WARNING  { background: #ffedd5; color: #9a3412; }
+.level.CRITICAL { background: #fee2e2; color: #991b1b; }
+
+/* EDA 리스트 */
+#edaList { list-style: none; padding: 0; margin: 12px 0 0; }
+#edaList li {
+  padding: 8px 12px; border: 1px solid var(--line);
+  border-radius: 8px; margin-bottom: 6px;
+  display: flex; justify-content: space-between; font-size: 13px;
+}
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+.tag.LOW_SIGNAL { background: #dcfce7; color: #166534; }
+.tag.MODERATE_SIGNAL { background: #fef3c7; color: #854d0e; }
+.tag.HIGH_STRESS_SIGNAL { background: #fee2e2; color: #991b1b; }
+
+/* 시간대 차트 */
+.tb-grid { display: flex; gap: 8px; align-items: flex-end; height: 140px; margin-top: 8px; }
+.tb-grid .bar {
+  flex: 1; background: var(--accent); border-radius: 6px 6px 0 0;
+  position: relative; min-height: 4px;
+}
+.tb-grid .bar.empty { background: #e5e7eb; }
+.tb-grid .bar span {
+  position: absolute; bottom: -22px; left: 0; right: 0;
+  text-align: center; font-size: 11px; color: var(--muted);
+}
+.tb-grid .bar .val {
+  position: absolute; top: -18px; left: 0; right: 0;
+  text-align: center; font-size: 11px; color: #111;
+}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>스마트 헬스케어 — 오늘의 컨디션</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>오늘의 컨디션</h1>
+    <div id="userBadge"></div>
+  </header>
+
+  <!-- 로그인 -->
+  <section id="loginSection" class="card">
+    <h2>로그인</h2>
+    <form id="loginForm">
+      <label>사용자 ID <input name="user_id" value="user_001" required /></label>
+      <label>비밀번호 <input name="password" type="password" value="demo1234" required /></label>
+      <button type="submit">로그인</button>
+    </form>
+    <p class="muted">데모 계정: <code>user_001 / demo1234</code> 또는 <code>user_002 / demo1234</code></p>
+  </section>
+
+  <!-- 메인 -->
+  <main id="mainSection" hidden>
+    <!-- 아침 경보 -->
+    <section id="alertCard" class="card alert">
+      <h2>아침 조기 경보</h2>
+      <div id="alertContent" class="alert-body">불러오는 중…</div>
+      <button id="recomputeBtn" class="ghost">재계산</button>
+    </section>
+
+    <!-- EDA 입력 -->
+    <section class="card">
+      <h2>낮 EDA 측정 입력</h2>
+      <form id="edaForm">
+        <label>EDA 값 (μS)
+          <input name="eda_value" type="number" step="0.01" min="0" required placeholder="예: 1.2" />
+        </label>
+        <button type="submit">기록</button>
+      </form>
+      <ul id="edaList"></ul>
+    </section>
+
+    <!-- 저녁 자기평가 -->
+    <section class="card">
+      <h2>저녁 자기평가 (STAI-S)</h2>
+      <form id="staiForm">
+        <label>지금 얼마나 긴장/스트레스?
+          <select name="score" required>
+            <option value="1">1 — 매우 평온</option>
+            <option value="2">2 — 평온</option>
+            <option value="3" selected>3 — 보통</option>
+            <option value="4">4 — 긴장</option>
+            <option value="5">5 — 매우 긴장</option>
+          </select>
+        </label>
+        <label>메모 (선택) <input name="note" /></label>
+        <button type="submit">저장</button>
+      </form>
+      <p id="staiStatus" class="muted"></p>
+    </section>
+
+    <!-- 일별 리포트 -->
+    <section class="card">
+      <h2>일별 리포트</h2>
+      <div id="dailyReport">불러오는 중…</div>
+    </section>
+
+    <!-- 시간대별 리포트 -->
+    <section class="card">
+      <h2>시간대별 패턴</h2>
+      <div id="timeblockReport">불러오는 중…</div>
+    </section>
+
+    <button id="logoutBtn" class="ghost">로그아웃</button>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
