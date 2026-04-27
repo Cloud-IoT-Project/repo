@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Watch, Link2, Link2Off, Download, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { api } from '../lib/api';
 
 export default function FitbitCard({ fitbit, onRefresh }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
+  const [authPolling, setAuthPolling] = useState(false);
+  const pollRef = useRef(null);
+
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   if (!fitbit) {
     return (
@@ -27,7 +31,39 @@ export default function FitbitCard({ fitbit, onRefresh }) {
 
   async function connect() {
     const r = await api('/fitbit/authorize');
-    window.open(r.url, 'fitbit-auth', 'width=520,height=720');
+    const popup = window.open(r.url, 'fitbit-auth', 'width=520,height=720');
+    setAuthPolling(true);
+
+    // 팝업이 닫히거나 status가 connected가 될 때까지 1.5s 간격 polling.
+    // 5분 타임아웃.
+    let attempts = 0;
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      try {
+        const s = await api('/fitbit/status');
+        if (s.connected) {
+          clearInterval(pollRef.current); pollRef.current = null;
+          setAuthPolling(false);
+          if (popup && !popup.closed) { try { popup.close(); } catch {} }
+          await onRefresh();
+          return;
+        }
+      } catch {/* 네트워크 일시 오류 무시 */}
+
+      // 사용자가 팝업을 그냥 닫은 경우
+      if (popup && popup.closed) {
+        clearInterval(pollRef.current); pollRef.current = null;
+        setAuthPolling(false);
+        await onRefresh();
+        return;
+      }
+
+      // 5분 후 자동 종료
+      if (attempts >= 200) {
+        clearInterval(pollRef.current); pollRef.current = null;
+        setAuthPolling(false);
+      }
+    }, 1500);
   }
   async function sync() {
     setBusy(true); setResult(null);
@@ -106,14 +142,21 @@ export default function FitbitCard({ fitbit, onRefresh }) {
       ) : (
         <>
           <div className="text-sm text-slate-500 mt-2">
-            Fitbit 계정을 연결하면 야간 HRV / 수면 / RHR / EDA 스캔 데이터를 자동으로 가져옵니다.
+            Fitbit 계정을 연결하면 야간 HRV / 수면 / RHR 데이터를 자동으로 가져옵니다.
           </div>
-          <button
-            onClick={connect}
-            className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition"
-          >
-            <Link2 className="w-4 h-4" /> Fitbit 계정 연결
-          </button>
+          {authPolling ? (
+            <div className="mt-3 flex items-center gap-2 text-sm text-blue-600">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              새 창에서 Fitbit 인증을 완료해 주세요…
+            </div>
+          ) : (
+            <button
+              onClick={connect}
+              className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition"
+            >
+              <Link2 className="w-4 h-4" /> Fitbit 계정 연결
+            </button>
+          )}
         </>
       )}
     </Card>
