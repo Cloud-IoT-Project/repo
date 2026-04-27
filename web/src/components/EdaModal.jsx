@@ -94,11 +94,11 @@ export default function EdaModal({ onClose, onCompleted }) {
 
         {phase === PHASE.IDLE && (
           <div className="space-y-4">
-            <ol className="text-sm text-slate-700 space-y-2 leading-relaxed">
-              <li className="flex gap-2"><span className="font-semibold text-blue-600">1.</span> Charge 5에서 <strong>EDA Scan 앱</strong> 실행</li>
-              <li className="flex gap-2"><span className="font-semibold text-blue-600">2.</span> 손바닥을 디바이스 위에 올리고 3분간 유지</li>
-              <li className="flex gap-2"><span className="font-semibold text-blue-600">3.</span> 측정 완료 후 폰의 Fitbit 앱에서 <strong>평균 stress level</strong> 확인</li>
-              <li className="flex gap-2"><span className="font-semibold text-blue-600">4.</span> 본 화면에 그 값을 입력하면 자동 분류·기록</li>
+            <ol className="text-sm text-slate-700 space-y-2 leading-relaxed list-decimal pl-6 marker:text-blue-600 marker:font-semibold">
+              <li>Charge 5에서 <strong>EDA Scan 앱</strong> 실행</li>
+              <li>손바닥을 디바이스 위에 올리고 3분간 유지</li>
+              <li>측정 완료 후 폰의 Fitbit 앱에서 <strong>평균 stress level</strong> 확인</li>
+              <li>본 화면에 그 값을 입력하면 자동 분류·기록</li>
             </ol>
             <button onClick={startTimer}
               className="w-full py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition inline-flex items-center justify-center gap-1.5"
