@@ -101,6 +101,17 @@ npm run simulate -- --scenario stressed --eda
 
 시나리오: `auto` | `normal` | `caution` | `warning` | `stressed`
 
+## Fitbit 연동 범위
+
+| 데이터 | 용도 | 수집 방식 |
+|--------|------|----------|
+| 야간 HRV (rmssd) | 아침 경보 핵심 신호 | **Fitbit 자동 sync** |
+| 휴식기 심박 (RHR) | RHR Δ 계산 | **Fitbit 자동 sync** |
+| 수면 시간 / 효율 | sleep_efficiency 임계값 | **Fitbit 자동 sync** |
+| 낮 EDA 측정값 | 아침 경보 사후 검증 | **사용자 수동 입력** |
+
+> Fitbit Personal 앱은 `electrodermal_activity` scope을 정책상 거부합니다 (2024년 이후 health 민감 metric scope 강화). 따라서 EDA는 사용자가 디바이스에서 측정 후 폰의 Fitbit 앱에 표시된 평균값을 우리 앱에 입력하는 흐름으로 구현했습니다 — 이는 기획서 §3-1 MVP의 "**수동** EDA 측정" 항목과도 일치합니다. 디버그/추후 review 통과 대비로 `?eda=true` 옵션은 남겨두었습니다.
+
 ## 데모 흐름 (시연 영상용)
 
 1. `npm run seed && npm run simulate -- --days 5 --eda --scenario warning`

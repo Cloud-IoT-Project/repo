@@ -14,10 +14,11 @@ const AUTHORIZE_URL = process.env.FITBIT_AUTHORIZE_URL || 'https://www.fitbit.co
 const TOKEN_URL    = process.env.FITBIT_TOKEN_URL     || 'https://api.fitbit.com/oauth2/token';
 const API_BASE     = process.env.FITBIT_API_BASE      || 'https://api.fitbit.com';
 
+// Fitbit Personal 앱은 'electrodermal_activity' scope을 정책상 거부함
+// (2024년 이후 health 민감 metric scope 강화). 따라서 EDA는 사용자 수동 입력
+// (UI의 EDA 모달 + /api/v1/eda-check)으로 처리하고, OAuth scope에서는 제외.
 const SCOPES = ['heartrate', 'sleep', 'activity', 'profile'];
-// 'electrodermal_activity' 스코프는 Fitbit 측 명시적 신청이 필요할 수 있어
-// 기본 SCOPES에서는 빼고, EDA 호출 시도 시 401이면 안내하도록 처리.
-const SCOPES_WITH_EDA = [...SCOPES, 'electrodermal_activity'];
+const SCOPES_WITH_EDA = [...SCOPES, 'electrodermal_activity']; // 디버그용 (?eda=true)
 
 function isConfigured() {
   return !!(config.fitbit.clientId && config.fitbit.clientSecret && config.fitbit.redirectUri);
@@ -30,7 +31,7 @@ function generatePkce() {
   return { verifier, challenge };
 }
 
-function buildAuthorizeUrl({ userId, includeEda = true }) {
+function buildAuthorizeUrl({ userId, includeEda = false }) {
   if (!isConfigured()) throw new Error('Fitbit credentials not configured (.env)');
   const state = crypto.randomBytes(16).toString('hex');
   const { verifier, challenge } = generatePkce();
@@ -235,35 +236,36 @@ async function syncNightForDate(userId, date /* 'YYYY-MM-DD' */) {
     }
   } catch (e) { summary.errors.push(`sleep: ${e.message}`); }
 
-  // 4) EDA scans (해당 날짜)
-  try {
-    const r = await callFitbit(userId, `/1/user/-/eda/date/${date}/all.json`);
-    if (r.status === 200) {
-      const sessions = r.data?.eda?.[0]?.sessions || r.data?.eda || [];
-      // Fitbit 응답 포맷이 두 가지 형태로 오므로 양쪽 처리
-      const list = Array.isArray(sessions) ? sessions : [];
-      const insertCheck = db.prepare(`
-        INSERT INTO eda_checks (user_id, date, recorded_at, eda_value, eda_z, classification)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-      for (const s of list) {
-        const startTime = s.startTime || s.dateTime || s.start_time;
-        const avgStress = s.averageStressLevel ?? s.value?.averageStressLevel ?? s.scoringTime;
-        if (startTime && typeof avgStress === 'number') {
-          // raw_samples 적재 후 eda_checks에도 z-score + 분류 채워서 dashboard 노출
-          insertRaw.run(userId, startTime, 'eda', avgStress, JSON.stringify(s));
-          const z = edaToZ(userId, avgStress);
-          const cls = daytimeValidationRule(z);
-          insertCheck.run(userId, startTime.slice(0, 10), startTime, avgStress, z, cls);
-          summary.eda_inserted++;
+  // 4) EDA: 사용자의 fitbit_scope에 'electrodermal_activity'가 있을 때만 시도.
+  //    기본 OAuth flow에서는 EDA scope이 빠지므로 보통 이 분기는 진입 안 함.
+  //    (스펙 §3-1에 따라 EDA는 사용자 수동 입력이 정상 흐름)
+  const u = db.prepare('SELECT fitbit_scope FROM users WHERE user_id = ?').get(userId);
+  if (u && (u.fitbit_scope || '').includes('electrodermal_activity')) {
+    try {
+      const r = await callFitbit(userId, `/1/user/-/eda/date/${date}/all.json`);
+      if (r.status === 200) {
+        const sessions = r.data?.eda?.[0]?.sessions || r.data?.eda || [];
+        const list = Array.isArray(sessions) ? sessions : [];
+        const insertCheck = db.prepare(`
+          INSERT INTO eda_checks (user_id, date, recorded_at, eda_value, eda_z, classification)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `);
+        for (const s of list) {
+          const startTime = s.startTime || s.dateTime || s.start_time;
+          const avgStress = s.averageStressLevel ?? s.value?.averageStressLevel ?? s.scoringTime;
+          if (startTime && typeof avgStress === 'number') {
+            insertRaw.run(userId, startTime, 'eda', avgStress, JSON.stringify(s));
+            const z = edaToZ(userId, avgStress);
+            const cls = daytimeValidationRule(z);
+            insertCheck.run(userId, startTime.slice(0, 10), startTime, avgStress, z, cls);
+            summary.eda_inserted++;
+          }
         }
+      } else {
+        summary.errors.push(`eda ${r.status}`);
       }
-    } else if (r.status === 401 || r.status === 403) {
-      summary.errors.push(`eda: scope 부족 — Fitbit 앱 설정에서 'electrodermal_activity' 권한 확인`);
-    } else {
-      summary.errors.push(`eda ${r.status}`);
-    }
-  } catch (e) { summary.errors.push(`eda: ${e.message}`); }
+    } catch (e) { summary.errors.push(`eda: ${e.message}`); }
+  }
 
   return summary;
 }

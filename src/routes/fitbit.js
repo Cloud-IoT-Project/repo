@@ -49,7 +49,12 @@ router.get('/status', (req, res) => {
  */
 router.get('/authorize', (req, res) => {
   try {
-    const url = fitbit.buildAuthorizeUrl({ userId: req.user.user_id });
+    // 기본 OAuth scope은 heartrate / sleep / activity / profile.
+    // Fitbit Personal 앱은 'electrodermal_activity' scope을 정책상 거부하므로
+    // EDA는 사용자 수동 입력 흐름으로 처리. 디버그/추후 review 통과 대비로
+    // ?eda=true 옵션은 남겨둠.
+    const includeEda = req.query.eda === 'true';
+    const url = fitbit.buildAuthorizeUrl({ userId: req.user.user_id, includeEda });
     res.json({ url });
   } catch (e) {
     res.status(500).json({ error: 'authorize_failed', detail: e.message });

@@ -71,7 +71,6 @@ export default function Dashboard({ user, onLogout }) {
           alert={alert}
           onRecompute={async () => { await api('/morning-alert?recompute=true'); await loadAll(); }}
           onStartEda={() => setEdaModalOpen(true)}
-          fitbitConnected={fitbit?.connected}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -87,7 +86,6 @@ export default function Dashboard({ user, onLogout }) {
         <EdaModal
           onClose={() => setEdaModalOpen(false)}
           onCompleted={loadAll}
-          fitbitConnected={fitbit?.connected}
         />
       )}
     </div>

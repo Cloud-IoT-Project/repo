@@ -2,7 +2,7 @@ import { Sun, RefreshCw, Hand, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { LEVEL_LABEL, fmtDateTime } from '../lib/format';
 
-export default function MorningAlertCard({ alert, onRecompute, onStartEda, fitbitConnected }) {
+export default function MorningAlertCard({ alert, onRecompute, onStartEda }) {
   const [recomputing, setRecomputing] = useState(false);
   if (!alert) return <div className="bg-white rounded-2xl ring-1 ring-slate-200 p-5"><div className="text-sm text-slate-400">불러오는 중…</div></div>;
 
@@ -62,14 +62,12 @@ export default function MorningAlertCard({ alert, onRecompute, onStartEda, fitbi
           {recomputing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           재계산
         </button>
-        {fitbitConnected && (
-          <button
-            onClick={onStartEda}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
-          >
-            <Hand className="w-4 h-4" /> 지금 EDA 측정 시작
-          </button>
-        )}
+        <button
+          onClick={onStartEda}
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+        >
+          <Hand className="w-4 h-4" /> 지금 EDA 측정 시작
+        </button>
       </div>
     </section>
   );
