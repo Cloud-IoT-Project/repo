@@ -178,7 +178,7 @@ healthcare/v1/<user_id>/<metric>
 - SQLite 파일은 OS 레벨 권한으로 접근 제한
 
 ### 문의
-데이터 삭제 요청·문의: **jonnykim1o28@gmail.com**
+데이터 삭제 요청·문의: **jnghukkim@gmail.com**
 
 ### 변경 이력
 - 2026-04-27: 최초 작성
