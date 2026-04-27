@@ -12,6 +12,14 @@ function todayKST() {
   return kst.toISOString().slice(0, 10);
 }
 
+// 요청 host(ngrok 또는 localhost)에 맞춰 redirect_uri 동적 생성.
+// X-Forwarded-Host/Proto는 ngrok이 자동 설정해 줌.
+function detectRedirectUri(req) {
+  const proto = req.get('x-forwarded-proto') || req.protocol;
+  const host = req.get('x-forwarded-host') || req.get('host');
+  return `${proto}://${host}/api/v1/fitbit/callback`;
+}
+
 /**
  * @openapi
  * /api/v1/fitbit/status:
@@ -54,8 +62,9 @@ router.get('/authorize', (req, res) => {
     // EDA는 사용자 수동 입력 흐름으로 처리. 디버그/추후 review 통과 대비로
     // ?eda=true 옵션은 남겨둠.
     const includeEda = req.query.eda === 'true';
-    const url = fitbit.buildAuthorizeUrl({ userId: req.user.user_id, includeEda });
-    res.json({ url });
+    const redirectUri = detectRedirectUri(req);
+    const url = fitbit.buildAuthorizeUrl({ userId: req.user.user_id, includeEda, redirectUri });
+    res.json({ url, redirect_uri: redirectUri });
   } catch (e) {
     res.status(500).json({ error: 'authorize_failed', detail: e.message });
   }
@@ -92,7 +101,7 @@ router.get('/callback', async (req, res) => {
     return res.status(400).send(htmlPage('만료된 state', '인증을 다시 시도해주세요'));
   }
   try {
-    const tok = await fitbit.exchangeCodeForToken(code, stateRow.code_verifier);
+    const tok = await fitbit.exchangeCodeForToken(code, stateRow.code_verifier, stateRow.redirect_uri);
     fitbit.saveTokens(stateRow.user_id, tok);
     res.send(htmlPage(
       'Fitbit 연결 완료 ✓',
