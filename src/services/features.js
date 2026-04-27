@@ -99,15 +99,23 @@ function extractNightFeatures(userId, date) {
   };
 }
 
-// EDA 단일 측정 → z-score (개인 baseline EDA가 없을 경우 0 반환)
-// (단순화: 사용자별 EDA baseline은 raw_samples의 과거 EDA 평균/std로 동적 계산)
+// EDA 단일 측정 → z-score
+// 개인 baseline은 raw_samples의 과거 EDA 평균/std로 동적 계산.
+// 표본이 3건 미만일 때는 통계적 의미가 약하므로, 일반적인 EDA 분포
+// (평균 1.0 μS, 표준편차 0.5)를 가정한 default baseline을 사용해
+// 첫 측정부터 의미 있는 분류가 가능하게 함.
+const EDA_DEFAULT_MEAN = 1.0;
+const EDA_DEFAULT_STD = 0.5;
+
 function edaToZ(userId, edaValue) {
   const db = getDb();
   const stats = db.prepare(`
     SELECT AVG(value) AS mean, COUNT(*) AS n
     FROM raw_samples WHERE user_id = ? AND metric = 'eda'
   `).get(userId);
-  if (!stats || !stats.n || stats.n < 3) return 0;
+  if (!stats || !stats.n || stats.n < 3) {
+    return (edaValue - EDA_DEFAULT_MEAN) / EDA_DEFAULT_STD;
+  }
 
   // 표본표준편차
   const rows = db.prepare(`

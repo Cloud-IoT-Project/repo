@@ -29,7 +29,23 @@ export default function TimeBlockChart({ timeblock }) {
       <div className="h-44">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 8, left: -16, bottom: 0 }}>
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey="label"
+              axisLine={false}
+              tickLine={false}
+              height={36}
+              tick={({ x, y, payload, index }) => {
+                const block = data[index];
+                return (
+                  <g transform={`translate(${x},${y})`}>
+                    <text textAnchor="middle" fill="#64748b" fontSize="12" dy="14">{payload.value}</text>
+                    {block?.checks > 0 && (
+                      <text textAnchor="middle" fill="#3b82f6" fontSize="10" dy="28">측정 {block.checks}회</text>
+                    )}
+                  </g>
+                );
+              }}
+            />
             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} domain={[-2, 2]} />
             <ReferenceLine y={0} stroke="#e2e8f0" />
             <ReferenceLine y={1.0} stroke="#fecaca" strokeDasharray="3 3" label={{ value: '높음', fontSize: 10, fill: '#dc2626', position: 'right' }} />
