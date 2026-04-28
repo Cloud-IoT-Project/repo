@@ -11,7 +11,7 @@ const spec = swaggerJsdoc({
       description:
         'Fitbit 기반 다음날 스트레스 취약도 조기경보 + 일별/시간대별 리포트 (On-Premise stage)',
     },
-    servers: [{ url: 'http://localhost:8080' }],
+    servers: [{ url: 'http://43.202.54.55:8080' }],
     components: {
       securitySchemes: {
         bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },

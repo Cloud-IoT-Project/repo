@@ -16,7 +16,7 @@ npm run simulate -- --user user_001 --days 5 --eda   # 시뮬레이션 데이터
 npm run morning-job     # 오늘 아침 평가 즉시 실행 (cron 대신 수동 트리거)
 npm run build:web       # React 대시보드 빌드 → public/ 출력 (UI 변경 후 재실행)
 
-npm start               # 서버 가동 → http://localhost:8080
+npm start               # 서버 가동 → http://43.202.54.55:8080
 ```
 
 UI 개발 중에는 별도 dev server를 쓰면 HMR 가능:
@@ -25,7 +25,7 @@ UI 개발 중에는 별도 dev server를 쓰면 HMR 가능:
 npm run dev:web   # http://localhost:5173 (Vite, /api 요청은 8080으로 proxy)
 ```
 
-브라우저에서 `http://localhost:8080` 열고 `user_001 / demo1234`로 로그인.
+브라우저에서 `http://43.202.54.55:8080` 열고 `user_001 / demo1234`로 로그인.
 
 ## 프로젝트 구조
 
@@ -71,7 +71,7 @@ data/
 
 ## REST API
 
-문서: `http://localhost:8080/api/docs` (Swagger UI)
+문서: `http://43.202.54.55:8080/api/docs` (Swagger UI)
 
 | Method | Path                                | 설명 |
 |--------|-------------------------------------|------|
