@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Activity, Loader2 } from 'lucide-react';
 
 export default function LoginPage({ onLogin }) {
-  const [userId, setUserId] = useState('user_001');
-  const [password, setPassword] = useState('demo1234');
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +53,8 @@ export default function LoginPage({ onLogin }) {
         </form>
 
         <p className="text-xs text-slate-400 text-center mt-4">
-          데모 계정 — <code className="font-mono">user_001 / demo1234</code> 또는 <code className="font-mono">user_002 / demo1234</code>
+          데모 계정 ID: <code className="font-mono">user_001</code> / <code className="font-mono">user_002</code>
+          <br />비밀번호는 팀 내부 채널을 통해 공유됩니다
         </p>
       </div>
     </div>

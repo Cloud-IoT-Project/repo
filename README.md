@@ -25,7 +25,7 @@ UI 개발 중에는 별도 dev server를 쓰면 HMR 가능:
 npm run dev:web   # http://localhost:5173 (Vite, /api 요청은 8080으로 proxy)
 ```
 
-브라우저에서 `http://43.202.54.55:8080` 열고 `user_001 / demo1234`로 로그인.
+브라우저에서 `http://43.202.54.55:8080` 열고 `user_001` (또는 `user_002`)로 로그인. 비밀번호는 `.env`의 `DEMO_PASSWORD` 값(미설정 시 `demo1234`).
 
 ## 프로젝트 구조
 
@@ -153,11 +153,15 @@ healthcare/v1/<user_id>/<metric>
 
 | 항목 | 적용 |
 |------|------|
-| 비밀번호 | bcrypt (cost=10) 해시 |
-| 세션 | JWT (HS256, 12h 만료) |
-| 전송 | MQTT TLS 권장 (`mqtts://` URL) |
-| 저장 | SQLite 파일 권한 OS 레벨 제한 |
-| 외부 API | Fitbit OAuth 2.0 (token refresh) |
+| 비밀번호 | bcrypt (cost=10) 해시. 데모 비밀번호는 `.env`의 `DEMO_PASSWORD`로 설정 |
+| 세션 | JWT (HS256, 12h 만료). `JWT_SECRET`은 `openssl rand -hex 32`로 생성 권장 |
+| 무차별 대입 방지 | `express-rate-limit` — 로그인 IP당 15분 5회 제한, OAuth authorize 15분 10회 |
+| CORS | `ALLOWED_ORIGINS` 화이트리스트. 미설정 시 dev용 fallback (모든 origin 허용) |
+| 보안 헤더 | helmet — CSP, HSTS, X-Frame-Options, frame-ancestors 'none' 등 |
+| 전송 | MQTT TLS 권장 (`mqtts://` URL). HTTP API는 reverse proxy + Let's Encrypt로 HTTPS 권장 |
+| 저장 | SQLite 파일 권한 `chmod 600`, `.env`도 동일 |
+| 외부 API | Fitbit OAuth 2.0 PKCE + token refresh, state CSRF 방지 (30분 만료, 1회용) |
+| OWASP 알려진 취약점 | `npm audit` 결과 4개 moderate (esbuild/uuid transitive) — 모두 dev tool 또는 영향도 낮은 transitive |
 
 ## Terms of Service (이용 약관)
 
