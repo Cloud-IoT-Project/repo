@@ -56,3 +56,18 @@ export async function login(user_id, password) {
   if (!res.ok) throw new Error(body.error || '로그인 실패');
   return body;
 }
+
+export async function register({ user_id, password, display_name }) {
+  const res = await fetch('/api/v1/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...COMMON_HEADERS },
+    body: JSON.stringify({ user_id, password, display_name }),
+  });
+  const body = await res.json();
+  if (!res.ok) {
+    const err = new Error(body.message || body.error || '회원가입 실패');
+    err.code = body.error;
+    throw err;
+  }
+  return body;
+}
