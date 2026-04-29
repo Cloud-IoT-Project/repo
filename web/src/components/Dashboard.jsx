@@ -14,21 +14,21 @@ import EdaModal from './EdaModal';
 export default function Dashboard({ user, onLogout }) {
   const [alert, setAlert] = useState(null);
   const [daily, setDaily] = useState(null);
-  const [timeblock, setTimeblock] = useState(null);
   const [fitbit, setFitbit] = useState(null);
   const [edaModalOpen, setEdaModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [version, setVersion] = useState(0); // 변경 감지용 — 자식 컴포넌트가 watch
 
   const loadAll = useCallback(async () => {
     setRefreshing(true);
     try {
-      const [a, d, t, f] = await Promise.all([
+      const [a, d, f] = await Promise.all([
         api('/morning-alert'),
         api('/reports/daily'),
-        api('/reports/timeblock'),
         api('/fitbit/status'),
       ]);
-      setAlert(a); setDaily(d); setTimeblock(t); setFitbit(f);
+      setAlert(a); setDaily(d); setFitbit(f);
+      setVersion((v) => v + 1);
     } finally { setRefreshing(false); }
   }, []);
 
@@ -79,7 +79,7 @@ export default function Dashboard({ user, onLogout }) {
         </div>
 
         <DailyReportCard daily={daily} />
-        <TimeBlockChart timeblock={timeblock} />
+        <TimeBlockChart refreshVersion={version} />
       </main>
 
       {edaModalOpen && (
