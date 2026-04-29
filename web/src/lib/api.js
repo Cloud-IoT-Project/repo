@@ -1,6 +1,10 @@
 const TOKEN_KEY = 'sh_token';
 const USER_KEY = 'sh_user';
 
+// ngrok 무료 plan의 안내 페이지 우회. 어떤 값이든 헤더만 있으면 됨.
+// 자체 호스팅 / cloudflared 환경에선 무시됨 (해롭지 않음).
+const COMMON_HEADERS = { 'ngrok-skip-browser-warning': '1' };
+
 export function getToken() { return localStorage.getItem(TOKEN_KEY); }
 export function getStoredUser() {
   try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch { return null; }
@@ -20,6 +24,7 @@ export async function api(path, opts = {}) {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
+      ...COMMON_HEADERS,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(opts.headers || {}),
     },
@@ -44,7 +49,7 @@ export async function api(path, opts = {}) {
 export async function login(user_id, password) {
   const res = await fetch('/api/v1/auth/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...COMMON_HEADERS },
     body: JSON.stringify({ user_id, password }),
   });
   const body = await res.json();
