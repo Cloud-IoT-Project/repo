@@ -11,11 +11,12 @@ export function todayKST() {
   return kst.toISOString().slice(0, 10);
 }
 
-// 'YYYY-MM-DD'에 일수 더하기 (KST 기준 안전)
+// 'YYYY-MM-DD'에 일수 더하기. UTC 산술로 처리해 runtime TZ에 무관.
 export function addDays(yyyymmdd, delta) {
-  const d = new Date(yyyymmdd + 'T00:00:00+09:00');
-  d.setDate(d.getDate() + delta);
-  return d.toISOString().slice(0, 10);
+  const [y, m, d] = yyyymmdd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + delta);
+  return dt.toISOString().slice(0, 10);
 }
 
 export function isToday(yyyymmdd) {

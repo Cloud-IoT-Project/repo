@@ -35,9 +35,11 @@ function fetchNightSamples(userId, date) {
 }
 
 function prevDate(yyyymmdd) {
-  const d = new Date(yyyymmdd + 'T00:00:00+09:00');
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
+  // UTC 산술 — runtime TZ에 무관하게 calendar date 1일 빼기
+  const [y, m, d] = yyyymmdd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() - 1);
+  return dt.toISOString().slice(0, 10);
 }
 
 // 최근 3일(어제 포함) EDA z-score 평균

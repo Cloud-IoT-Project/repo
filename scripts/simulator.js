@@ -37,9 +37,11 @@ function gauss(rand, mean, std) {
 }
 
 function dateAddDays(yyyymmdd, delta) {
-  const d = new Date(yyyymmdd + 'T00:00:00+09:00');
-  d.setDate(d.getDate() + delta);
-  return d.toISOString().slice(0, 10);
+  // UTC 산술 — runtime TZ에 무관하게 calendar date ± delta
+  const [y, m, d] = yyyymmdd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + delta);
+  return dt.toISOString().slice(0, 10);
 }
 function todayKST() {
   const d = new Date();

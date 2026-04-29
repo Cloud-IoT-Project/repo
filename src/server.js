@@ -40,6 +40,8 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'same-site' },
 }));
 
+
+
 // CORS — ALLOWED_ORIGINS env 화이트리스트 기반. 미설정 시 모든 origin 허용 (dev only).
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',').map((s) => s.trim()).filter(Boolean);
