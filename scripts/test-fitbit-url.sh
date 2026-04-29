@@ -8,7 +8,7 @@ if [[ "$1" == "--no-eda" ]]; then EDA_PARAM="?eda=false"; fi
 
 # 1) 로그인
 LOGIN_BODY='{"user_id":"user_001","password":"demo1234"}'
-TOKEN=$(curl -s -X POST http://13.209.81.179:8080/api/v1/auth/login \
+TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
   -H 'content-type: application/json' \
   -d "$LOGIN_BODY" \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["token"])')
@@ -18,7 +18,7 @@ echo
 
 # 2) authorize URL 생성
 URL=$(curl -s -H "authorization: Bearer $TOKEN" \
-  "http://13.209.81.179:8080/api/v1/fitbit/authorize${EDA_PARAM}" \
+  "http://localhost:8080/api/v1/fitbit/authorize${EDA_PARAM}" \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["url"])')
 
 echo "==== AUTHORIZE URL ===="
