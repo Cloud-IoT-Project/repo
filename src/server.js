@@ -17,6 +17,7 @@ const edaRoutes = require('./routes/eda');
 const reportsRoutes = require('./routes/reports');
 const staiRoutes = require('./routes/stai');
 const fitbitRoutes = require('./routes/fitbit');
+const iotRoutes = require('./routes/iot');
 
 const app = express();
 
@@ -25,7 +26,7 @@ app.set('trust proxy', 1);
 
 // 보안 헤더 + CSP. React 빌드는 inline script가 없지만 Swagger UI는 있어서
 // 'unsafe-inline'을 허용. 클래스 프로젝트 시연 수준에선 합리적인 트레이드오프.
-app.use(helmet({
+/**app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       'default-src': ["'self'"],
@@ -39,7 +40,11 @@ app.use(helmet({
   },
   crossOriginResourcePolicy: { policy: 'same-site' },
 }));
+*/
 
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
 
 
 // CORS — ALLOWED_ORIGINS env 화이트리스트 기반. 미설정 시 모든 origin 허용 (dev only).
@@ -87,6 +92,7 @@ const apiLimiter = rateLimit({
 // 헬스체크
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'smart-healthcare', env: config.env }));
 
+app.use('/api/v1/iot', iotRoutes);
 // 인증 (auth는 자체에서 토큰 발급) — 무차별 대입 방지 limiter 부착
 app.use('/api/v1/auth', loginLimiter, authRoutes);
 
