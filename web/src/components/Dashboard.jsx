@@ -23,7 +23,7 @@ export default function Dashboard({ user, onLogout }) {
     setRefreshing(true);
     try {
       const [a, d, f] = await Promise.all([
-        api('/morning-alert'),
+        api('/stress/morning-alert'),
         api('/reports/daily'),
         api('/fitbit/status'),
       ]);
@@ -69,7 +69,7 @@ export default function Dashboard({ user, onLogout }) {
 
         <MorningAlertCard
           alert={alert}
-          onRecompute={async () => { await api('/morning-alert?recompute=true'); await loadAll(); }}
+          onRecompute={async () => { await api('/stress/morning-alert?recompute=true'); await loadAll(); }}
           onStartEda={() => setEdaModalOpen(true)}
         />
 

@@ -57,11 +57,12 @@ export default function EdaModal({ onClose, onCompleted }) {
     setError('');
     setPhase(PHASE.SAVING);
     try {
-      const r = await api('/eda-check', {
+      const r = await api('/stress/eda-check', {
         method: 'POST',
-        body: JSON.stringify({ eda_value: val }),
+        body: JSON.stringify({ edaValue: val }),
       });
-      setResult(r);
+      // 서버 응답엔 eda_value가 없으므로 입력값을 합쳐 표시
+      setResult({ ...r, eda_value: val });
       setPhase(PHASE.DONE);
       await onCompleted?.();
       setTimeout(onClose, 2200);

@@ -12,8 +12,10 @@ export default function EdaInputCard({ onSubmitted }) {
     if (!val) return;
     setBusy(true);
     try {
-      const r = await api('/eda-check', { method: 'POST', body: JSON.stringify({ eda_value: parseFloat(val) }) });
-      setLast(r);
+      const edaValue = parseFloat(val);
+      const r = await api('/stress/eda-check', { method: 'POST', body: JSON.stringify({ edaValue }) });
+      // 서버 응답엔 eda_value가 없으므로 입력값을 합쳐 표시
+      setLast({ ...r, eda_value: edaValue });
       setVal('');
       await onSubmitted?.();
     } catch (e) { alert(e.message); }

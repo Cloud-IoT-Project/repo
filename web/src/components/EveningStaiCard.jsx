@@ -20,7 +20,12 @@ export default function EveningStaiCard({ onSubmitted }) {
     e.preventDefault();
     setBusy(true);
     try {
-      await api('/evening-stai', { method: 'POST', body: JSON.stringify({ score, note: note || null }) });
+      // 서버 계약: { evaluationDate(YYYY-MM-DD, KST), staiScore(1~5), userNotes }
+      const evaluationDate = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+      await api('/stress/evening-stai', {
+        method: 'POST',
+        body: JSON.stringify({ evaluationDate, staiScore: score, userNotes: note || null }),
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
       await onSubmitted?.();
