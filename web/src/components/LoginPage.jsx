@@ -34,7 +34,7 @@ export default function LoginPage({ onLogin, onRegister }) {
         </div>
 
         <p className="text-xs text-slate-400 text-center mt-4">
-          데모 계정: <code className="font-mono">user_001</code> / <code className="font-mono">user_002</code> (비밀번호는 팀 내부 공유)
+          이메일과 비밀번호로 로그인하세요. 계정이 없으면 회원가입 탭에서 가입할 수 있습니다.
         </p>
       </div>
     </div>
@@ -55,7 +55,7 @@ function TabBtn({ active, onClick, children }) {
 }
 
 function LoginForm({ onLogin }) {
-  const [userId, setUserId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
@@ -64,14 +64,14 @@ function LoginForm({ onLogin }) {
     e.preventDefault();
     setErr('');
     setLoading(true);
-    try { await onLogin(userId, password); }
-    catch (e) { setErr(e.message || '로그인 실패'); }
+    try { await onLogin(email, password); }
+    catch (e) { setErr(friendlyError(e)); }
     finally { setLoading(false); }
   }
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <Field label="아이디" value={userId} onChange={setUserId} placeholder="user_001" autoFocus />
+      <Field label="이메일" type="email" value={email} onChange={setEmail} placeholder="you@example.com" autoFocus />
       <Field label="비밀번호" type="password" value={password} onChange={setPassword} />
       {err && <p className="text-xs text-red-600 -mt-1">{err}</p>}
       <SubmitBtn loading={loading}>로그인</SubmitBtn>
@@ -80,17 +80,20 @@ function LoginForm({ onLogin }) {
 }
 
 function RegisterForm({ onRegister }) {
-  const [userId, setUserId] = useState('');
+  const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [pwConfirm, setPwConfirm] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Cognito 비밀번호 정책(최소 12자, 대/소문자+숫자)과 일치
   function clientValidate() {
-    if (!/^[a-zA-Z0-9_]{3,32}$/.test(userId))
-      return '아이디는 영문/숫자/_ 3~32자';
-    if (password.length < 8) return '비밀번호는 최소 8자';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+      return '올바른 이메일 형식이 아닙니다';
+    if (password.length < 12) return '비밀번호는 최소 12자';
+    if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password))
+      return '비밀번호는 대문자·소문자·숫자를 포함해야 합니다';
     if (password !== pwConfirm) return '비밀번호 확인이 일치하지 않습니다';
     return null;
   }
@@ -103,21 +106,21 @@ function RegisterForm({ onRegister }) {
     setLoading(true);
     try {
       await onRegister({
-        user_id: userId,
+        email,
         password,
         display_name: displayName || undefined,
       });
       // 성공 시 App이 자동 로그인 상태로 전환 — 별도 처리 불필요
     } catch (e) {
-      setErr(e.message || '회원가입 실패');
+      setErr(friendlyError(e));
     } finally { setLoading(false); }
   }
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <Field label="아이디" value={userId} onChange={setUserId} placeholder="영문/숫자/_ 3~32자" autoFocus />
+      <Field label="이메일" type="email" value={email} onChange={setEmail} placeholder="you@example.com" autoFocus />
       <Field label="이름 (선택)" value={displayName} onChange={setDisplayName} placeholder="대시보드 헤더에 표시됨" />
-      <Field label="비밀번호" type="password" value={password} onChange={setPassword} placeholder="최소 8자" />
+      <Field label="비밀번호" type="password" value={password} onChange={setPassword} placeholder="최소 12자, 대/소문자+숫자" />
       <Field label="비밀번호 확인" type="password" value={pwConfirm} onChange={setPwConfirm} />
       {err && <p className="text-xs text-red-600 -mt-1">{err}</p>}
       <SubmitBtn loading={loading}>가입하고 시작하기</SubmitBtn>
@@ -126,6 +129,18 @@ function RegisterForm({ onRegister }) {
       </p>
     </form>
   );
+}
+
+// Cognito 에러 코드 → 한국어 메시지
+function friendlyError(e) {
+  switch (e.code) {
+    case 'NotAuthorizedException': return '이메일 또는 비밀번호가 올바르지 않습니다';
+    case 'UserNotFoundException':  return '존재하지 않는 계정입니다';
+    case 'UsernameExistsException': return '이미 가입된 이메일입니다';
+    case 'InvalidPasswordException': return '비밀번호가 정책에 맞지 않습니다 (최소 12자, 대/소문자+숫자)';
+    case 'InvalidParameterException': return '입력값을 확인해주세요';
+    default: return e.message || '요청을 처리하지 못했습니다';
+  }
 }
 
 function Field({ label, value, onChange, type = 'text', placeholder, autoFocus }) {
