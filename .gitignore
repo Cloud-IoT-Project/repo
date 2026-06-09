@@ -10,3 +10,5 @@ CLAUDE.md
 *.log
 .vscode/
 .idea/
+.venv-ml/
+data/*.db

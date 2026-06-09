@@ -1,5 +1,6 @@
 import { FileText } from 'lucide-react';
 import { fmtTime, LEVEL_LABEL } from '../lib/format';
+import UserStateCard from './UserStateCard.jsx';
 
 export default function DailyReportCard({ daily }) {
   if (!daily) return null;
@@ -14,6 +15,7 @@ export default function DailyReportCard({ daily }) {
       </div>
 
       <p className="text-sm text-slate-700 leading-relaxed">{daily.summary}</p>
+      <UserStateCard userState={daily.user_state} />
 
       {eda.length > 0 && (
         <div className="mt-4 space-y-1.5">

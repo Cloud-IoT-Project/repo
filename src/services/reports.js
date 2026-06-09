@@ -4,6 +4,10 @@
 
 const { getDb } = require('../db');
 const { LEVEL_META } = require('./rules');
+const { predictUserState } = require('./userStateKmeans');
+const { extractUserStateWindowFeatures } = require('./features');
+
+
 
 const TIME_BLOCKS = [
   { name: '06:00-12:00', label: '오전',     start: 6,  end: 12 },
@@ -48,6 +52,22 @@ function buildDailyReport(userId, date) {
 
   const summary = makeSummary(assess, edas, stai, matched);
 
+  const stateFeatures = extractUserStateWindowFeatures(userId, date, 1);
+  const stateResult = predictUserState(stateFeatures);
+
+  const userState = {
+    cluster_id: stateResult.cluster_id,
+    cluster_name: stateResult.cluster_name,
+    description: stateResult.description,
+    recommendations: stateResult.recommendations,
+    model_name: stateResult.model_name,
+    model_version: stateResult.model_version,
+    feature_window_days: stateResult.window_days,
+    analysis_basis: 'today',
+    analysis_basis_label: '오늘 수면/심박/활동 데이터 기반',
+    input_features: stateFeatures,
+  };
+
   return {
     date,
     morning_alert: assess
@@ -63,6 +83,7 @@ function buildDailyReport(userId, date) {
     evening_stai: stai,
     matched_with_morning_alert: matched,
     summary,
+    user_state: userState,
   };
 }
 

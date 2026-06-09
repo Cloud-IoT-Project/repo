@@ -42,6 +42,60 @@ function prevDate(yyyymmdd) {
   return dt.toISOString().slice(0, 10);
 }
 
+// 특정 사용자, 특정 날짜 하루 전체 샘플 모으기
+// 오늘 상태 유형 분석용.
+// date = YYYY-MM-DD 기준 KST 00:00 ~ 다음날 00:00
+function fetchDaySamples(userId, date) {
+  const db = getDb();
+
+  const startISO = `${date}T00:00:00+09:00`;
+
+  const [y, m, d] = date.split('-').map(Number);
+  const next = new Date(Date.UTC(y, m - 1, d));
+  next.setUTCDate(next.getUTCDate() + 1);
+  const nextDate = next.toISOString().slice(0, 10);
+
+  const endISO = `${nextDate}T00:00:00+09:00`;
+
+  return db.prepare(`
+    SELECT metric, value, recorded_at
+    FROM raw_samples
+    WHERE user_id = ?
+      AND recorded_at >= ?
+      AND recorded_at < ?
+  `).all(userId, startISO, endISO);
+}
+
+/**
+ * 오늘 상태 유형 분류용 KMeans feature 생성
+ *
+ * 학습 코드는 WINDOW_DAYS = 1로 다시 학습했지만,
+ * feature 이름은 기존 inference.json과 맞추기 위해 그대로 사용한다.
+ */
+function extractUserStateWindowFeatures(userId, date, windowDays = 1) {
+  const samples = fetchDaySamples(userId, date);
+
+  const byMetric = (m) =>
+    samples
+      .filter((s) => s.metric === m)
+      .map((s) => s.value);
+
+  let win_avg_sleep_efficiency = mean(byMetric('sleep_efficiency'));
+
+  if (win_avg_sleep_efficiency !== null && win_avg_sleep_efficiency > 1.5) {
+    win_avg_sleep_efficiency = win_avg_sleep_efficiency / 100.0;
+  }
+
+  return {
+    win_avg_hrv: mean(byMetric('hrv_rmssd')),
+    win_avg_rhr: mean(byMetric('rhr')),
+    win_avg_sleep_duration_min: mean(byMetric('sleep_duration_min')),
+    win_avg_sleep_efficiency,
+    win_avg_steps: mean(byMetric('steps')),
+    win_avg_sedentary_minutes: mean(byMetric('sedentary_minutes')),
+  };
+}
+
 // 최근 3일(어제 포함) EDA z-score 평균
 function eda3DayMeanZ(userId, date) {
   const db = getDb();
@@ -134,6 +188,7 @@ module.exports = {
   median,
   mean,
   extractNightFeatures,
+  extractUserStateWindowFeatures,
   edaToZ,
   prevDate,
 };
