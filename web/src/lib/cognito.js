@@ -4,9 +4,9 @@
 // SPA에서 직접 Cognito와 통신해 ID 토큰을 발급받고, 그 토큰을 API Gateway
 // Cognito authorizer에 전달한다 (api.js).
 //
-// 로그인 식별자 = email. Cognito는 email을 alias로 쓰면 username을 email 형식으로
-// 둘 수 없으므로, 가입 시 username은 UUID로 만들고 email/name은 속성으로 저장한다.
-// 사용자는 email로 로그인하고 Cognito가 alias를 실제 계정으로 해석한다.
+// 로그인 식별자 = email. 풀이 "이메일로 로그인"(UsernameAttributes=['email'])으로
+// 구성돼 있어 username 자체가 email이어야 한다. 따라서 가입 시 username = email로
+// 넘긴다. name은 풀의 필수 속성이라 비어 있으면 이메일 로컬파트로 채운다.
 
 import {
   CognitoUserPool,
@@ -45,17 +45,16 @@ function normalizeErr(err) {
   return e;
 }
 
-function randomUsername() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-  return `u_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
-// 회원가입 — Pre-SignUp Lambda 트리거가 자동 확인하므로 이메일 코드 입력 불필요
+// 회원가입 — Pre-SignUp Lambda 트리거가 자동 확인하므로 이메일 코드 입력 불필요.
+// username = email (이메일 로그인 풀이라 UUID는 InvalidParameterException으로 거부됨).
 export function signUp({ email, password, displayName }) {
   return new Promise((resolve, reject) => {
-    const attrs = [new CognitoUserAttribute({ Name: 'email', Value: email })];
-    if (displayName) attrs.push(new CognitoUserAttribute({ Name: 'name', Value: displayName }));
-    getPool().signUp(randomUsername(), password, attrs, null, (err) => {
+    const attrs = [
+      new CognitoUserAttribute({ Name: 'email', Value: email }),
+      // name이 풀 필수 속성 → 비어 있으면 가입이 거부되므로 기본값을 채운다.
+      new CognitoUserAttribute({ Name: 'name', Value: displayName || email.split('@')[0] }),
+    ];
+    getPool().signUp(email, password, attrs, null, (err) => {
       if (err) return reject(normalizeErr(err));
       resolve();
     });

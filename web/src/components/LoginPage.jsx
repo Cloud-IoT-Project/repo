@@ -138,7 +138,7 @@ function friendlyError(e) {
     case 'UserNotFoundException':  return '존재하지 않는 계정입니다';
     case 'UsernameExistsException': return '이미 가입된 이메일입니다';
     case 'InvalidPasswordException': return '비밀번호가 정책에 맞지 않습니다 (최소 12자, 대/소문자+숫자)';
-    case 'InvalidParameterException': return '입력값을 확인해주세요';
+    case 'InvalidParameterException': return `입력값을 확인해주세요 (${e.message || ''})`;
     default: return e.message || '요청을 처리하지 못했습니다';
   }
 }
